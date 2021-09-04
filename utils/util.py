@@ -70,7 +70,7 @@ def invert(inverter, image):
   return latent_code, reconstruction, ssim_loss
 
 
-def batch_invert(inverter,source_dir,threshold = 0.4):
+def batch_invert(inverter,source_dir,threshold = 0.3):
   """Inverts a directory of images which has not been preprocessed."""
 
   latent_codes = []
@@ -79,7 +79,7 @@ def batch_invert(inverter,source_dir,threshold = 0.4):
   # inverter = build_inverter(model_name=model_name)
 
   for image_name in natsorted(os.listdir(source_dir)):
-    if image_name.split('.').lower() is 'jpg' or 'png' or 'jpeg' :
+    if image_name.split('.')[-1].lower() is 'jpg' or 'png' or 'jpeg' :
       mani_image = align(inverter, os.path.join(source_dir,image_name))
       if mani_image is not None:
         if mani_image.shape[2] == 4:
@@ -121,7 +121,7 @@ def load_images_from_dir(dspth,align_size = 256, need_align = False):
 
 
   for image_name in natsorted(os.listdir(dspth)):
-    if image_name.split('.').lower() is 'jpg' or 'png' or 'jpeg' :
+    if image_name.split('.')[-1].lower() is 'jpg' or 'png' or 'jpeg' :
       aligned_image = plt.imread(os.path.join(dspth,image_name))
       if need_align:
         aligned_image = align_face((os.path.join(dspth,image_name)),align_size=align_size)

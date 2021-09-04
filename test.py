@@ -25,6 +25,9 @@ def parse_args():
   parser.add_argument('--test_dir', type=str, default = './test_data',
                       help='directory of images to invert.')
 
+  parser.add_argument('--need_align', type=bool, default = True,
+                      help='need alignment and crop of input images.')
+
   parser.add_argument('-o', '--output_dir', type=str, default='./results',
                       help='Directory to save the results. If not specified, '
                            '`./results/'
@@ -68,11 +71,14 @@ def main():
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_id
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+    
+
 
     assert os.path.exists(args.test_dir)
     model_name = 'styleganinv_ffhq256'  
     MODEL_DIR = os.path.join(args.pretrained_dir)
     os.makedirs(MODEL_DIR, exist_ok=True)
+    
 
     output_dir = args.output_dir
     if not os.path.exists(output_dir):
@@ -81,26 +87,24 @@ def main():
     inpainting_save_path = os.path.join(output_dir,'inpainting/')
     align_save_path = os.path.join(output_dir,'aligned_images/')
     latent_codes_save_path = os.path.join(output_dir,'inversion/')
-
+    
     if not os.path.exists(align_save_path):
          os.makedirs(align_save_path)
 
     if not os.path.exists(latent_codes_save_path):
          os.makedirs(latent_codes_save_path)
     
-    
-     
-
     logger,logfile_name = setup_logger(output_dir, 'hairGAN.log', 'logger')
     logger.info(f"logging into {logfile_name}")
 
-    images,aligned_image_names = util.load_images_from_dir(args.test_dir,need_align = True)
-
-    for i,img in enumerate(images):
-         plt.imsave(os.path.join(align_save_path,aligned_image_names[i]),img)
-
+    images,aligned_image_names = util.load_images_from_dir(args.test_dir,need_align = args.need_align)
     logger.info(f"found {len(images)} images in the folder")
 
+    if args.need_align:
+      for i,img in enumerate(images):
+         plt.imsave(os.path.join(align_save_path,aligned_image_names[i]),img)
+      args.test_dir = align_save_path
+   
     logger.info('Loading models for stylegan inversion.')
 
     logger.info('Loading inverter model.')
