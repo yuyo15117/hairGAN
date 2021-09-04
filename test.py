@@ -13,7 +13,6 @@ from pylab import *
 from models.hypergan_models.model import Model as hyperganModel
 import utils.segment
 import utils.inpainting
-from utils.hypergan_utils import *
 from utils.logger import setup_logger
 from utils import util
 

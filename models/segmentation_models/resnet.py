@@ -85,9 +85,10 @@ class Resnet18(nn.Module):
         state_dict = modelzoo.load_url(resnet18_url)
         self_state_dict = self.state_dict()
         for k, v in state_dict.items():
+            state_dict[k] = v.to(DEVICE)
             if 'fc' in k: continue
             self_state_dict.update({k: v})
-        self.load_state_dict(self_state_dict , map_location=DEVICE)
+        self.load_state_dict(self_state_dict)
 
     def get_params(self):
         wd_params, nowd_params = [], []

@@ -11,7 +11,7 @@ import scipy.ndimage
 class FaceLandmarkDetector(object):
   """Class of face landmark detector."""
 
-  def __init__(self, align_size=256, enable_padding=True, model_name = 'styleganinv_ffhq256' ,model_dir = 'pretrain' ,landmark_model_name = 'shape_predictor_68_face_landmarks.dat'):
+  def __init__(self, align_size=256, enable_padding=True, model_name = 'styleganinv_ffhq256' ,model_dir = 'pretrained_models' ,landmark_model_name = 'shape_predictor_68_face_landmarks.dat'):
     """Initializes face detector and landmark detector.
 
   Args:

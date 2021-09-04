@@ -14,7 +14,7 @@ DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 def segment_image(image,modelpath = './pretrained_models/79999_iter.pth', size = 256):
     n_classes = 19
     net = BiSeNet(n_classes=n_classes)
-    net.load_state_dict(torch.load(modelpath) , map_location=DEVICE)
+    net.load_state_dict(torch.load(modelpath, map_location=DEVICE) )
     net.to(DEVICE)
     net.eval()
 
