@@ -79,17 +79,26 @@ def main():
         os.makedirs(output_dir)
 
     inpainting_save_path = os.path.join(output_dir,'inpainting/')
-
+    align_save_path = os.path.join(output_dir,'aligned_images/')
     latent_codes_save_path = os.path.join(output_dir,'inversion/')
+
+    if not os.path.exists(align_save_path):
+         os.makedirs(align_save_path)
+
     if not os.path.exists(latent_codes_save_path):
          os.makedirs(latent_codes_save_path)
+    
     
      
 
     logger,logfile_name = setup_logger(output_dir, 'hairGAN.log', 'logger')
     logger.info(f"logging into {logfile_name}")
 
-    images,_ = util.load_images_from_dir(args.test_dir)
+    images,aligned_image_names = util.load_images_from_dir(args.test_dir,need_align = True)
+
+    for i,img in enumerate(images):
+         plt.imsave(os.path.join(align_save_path,aligned_image_names[i]),img)
+
     logger.info(f"found {len(images)} images in the folder")
 
     logger.info('Loading models for stylegan inversion.')

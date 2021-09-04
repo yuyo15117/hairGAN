@@ -30,6 +30,9 @@ def align_face(image_path, align_size=256):
     return None
   return img
 
+def crop_to_size(image,size=256):
+  
+  pass
 
 def build_inverter(model_name,pretrained_weights,logger = None, iteration=300, regularization_loss_weight=0.6 , loss_weight_ssim=3 ):
   """Builds inverter"""
@@ -67,7 +70,7 @@ def invert(inverter, image):
   return latent_code, reconstruction, ssim_loss
 
 
-def batch_invert(inverter,source_dir,threshold = 0.5):
+def batch_invert(inverter,source_dir,threshold = 0.4):
   """Inverts a directory of images which has not been preprocessed."""
 
   latent_codes = []
@@ -76,15 +79,15 @@ def batch_invert(inverter,source_dir,threshold = 0.5):
   # inverter = build_inverter(model_name=model_name)
 
   for image_name in natsorted(os.listdir(source_dir)):
-
-    mani_image = align(inverter, os.path.join(source_dir,image_name))
-    if mani_image is not None:
-      if mani_image.shape[2] == 4:
-        mani_image = mani_image[:, :, :3]
-      latent_code, _ , ssim_loss= invert(inverter, mani_image)
-      if ssim_loss>threshold:
-        image_names.append(image_name)
-        latent_codes.append(latent_code)
+    if image_name.split('.').lower() is 'jpg' or 'png' or 'jpeg' :
+      mani_image = align(inverter, os.path.join(source_dir,image_name))
+      if mani_image is not None:
+        if mani_image.shape[2] == 4:
+          mani_image = mani_image[:, :, :3]
+        latent_code, _ , ssim_loss= invert(inverter, mani_image)
+        if ssim_loss>threshold:
+          image_names.append(image_name)
+          latent_codes.append(latent_code)
   return latent_codes,image_names
 
 
@@ -118,12 +121,13 @@ def load_images_from_dir(dspth,align_size = 256, need_align = False):
 
 
   for image_name in natsorted(os.listdir(dspth)):
-    aligned_image = plt.imread(os.path.join(dspth,image_name))
-    if need_align:
-      aligned_image = align_face((os.path.join(dspth,image_name)),align_size=align_size)
-    #else:
-      #aligned_image = cv2.resize(aligned_image , (align_size,align_size))
-    images.append(aligned_image)
+    if image_name.split('.').lower() is 'jpg' or 'png' or 'jpeg' :
+      aligned_image = plt.imread(os.path.join(dspth,image_name))
+      if need_align:
+        aligned_image = align_face((os.path.join(dspth,image_name)),align_size=align_size)
+      #else:
+        #aligned_image = cv2.resize(aligned_image , (align_size,align_size))
+      images.append(aligned_image)
 
   return images,image_names
 
