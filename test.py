@@ -38,8 +38,8 @@ def parse_args():
   parser.add_argument('--learning_rate', type=float, default=0.01,
                       help='Learning rate for optimization. (default: 0.01)')
 
-  parser.add_argument('--num_iterations', type=int, default=100,
-                      help='Number of optimization iterations. (default: 100)')
+  parser.add_argument('--num_iterations', type=int, default=150,
+                      help='Number of optimization iterations for inversion. (default: 150)')
 
   parser.add_argument('--loss_weight_perceptual', type=float, default=5e-5,
                       help='The perceptual loss scale for optimization. '
@@ -95,7 +95,7 @@ def main():
     logger.info('Loading models for stylegan inversion.')
 
     logger.info('Loading inverter model.')
-    inverter = util.build_inverter(model_name = model_name,logger =logger,iteration = 200,pretrained_weights = os.path.join(MODEL_DIR,"vgg16.pth"))
+    inverter = util.build_inverter(model_name = model_name,logger =logger,iteration = args.num_iterations,pretrained_weights = os.path.join(MODEL_DIR,"vgg16.pth"))
 
     logger.info('Loading generator model.')
     latent_code_to_image_generator = util.get_generator(model_name = model_name)
