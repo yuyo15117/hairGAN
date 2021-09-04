@@ -1,0 +1,4 @@
+# ignore these folders
+__pycache__
+pretrained_models
+
