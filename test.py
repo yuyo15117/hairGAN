@@ -71,7 +71,7 @@ def main():
 
     assert os.path.exists(args.test_dir)
     model_name = 'styleganinv_ffhq256'  
-    MODEL_DIR = os.path.join('./pretrained_models')
+    MODEL_DIR = os.path.join(args.pretrained_dir)
     os.makedirs(MODEL_DIR, exist_ok=True)
 
     output_dir = args.output_dir
