@@ -18,21 +18,49 @@ from .face_landmark_detector import FaceLandmarkDetector
 
 
 
-def align_face(image_path, align_size=256):
+# def align_face(image_path, align_size=256):
+#   """Aligns a given face."""
+#   model = FaceLandmarkDetector(align_size)
+#   face_infos = model.detect(image_path)
+#   imgs = []
+#   if len(face_infos) != 0:
+#     face_infos = face_infos
+#     for info in face_infos:
+#       imgs.append(model.align(info))
+
+#   else:
+#     return None
+#   return imgs
+
+
+def align_face(image_path, align_size=256 , use_hog = False):
   """Aligns a given face."""
-  model = FaceLandmarkDetector(align_size)
+  model = FaceLandmarkDetector(align_size , use_hog= use_hog)
   face_infos = model.detect(image_path)
+
+  aligned_images = []
+  aligned_images_names = []
+
+
   if len(face_infos) != 0:
-    face_infos = face_infos[0]
-    img = model.align(face_infos)
 
+    if len(face_infos) == 1:
+      info = face_infos[0]
+      aligned_image = model.align(info)
+      aligned_image_name = info['image_path'].split('/')[-1].split('.')[0]+".jpg"
+      return aligned_image , aligned_image_name
+
+    elif len(face_infos) > 1:
+      for b,info in enumerate(face_infos):
+        aligned_image = model.align(info)
+        aligned_image_name = info['image_path'].split('/')[-1].split('.')[0]+f'_{b}.jpg'
+        
+        aligned_images.append(aligned_image)
+        aligned_images_names.append(aligned_image_name)
+
+      return aligned_images,aligned_images_names
   else:
-    return None
-  return img
-
-def crop_to_size(image,size=256):
-  
-  pass
+    return None, None
 
 def build_inverter(model_name,pretrained_weights,logger = None, iteration=300, regularization_loss_weight=0.6 , loss_weight_ssim=3 ):
   """Builds inverter"""
@@ -59,9 +87,9 @@ def get_generator(model_name):
 
 def align(inverter, image_path):
   """Aligns an unloaded image."""
-  aligned_image = align_face(image_path,
+  aligned_images , aligned_images_names  = align_face(image_path,
                              align_size=256)
-  return aligned_image
+  return aligned_images , aligned_images_names
 
 
 def invert(inverter, image):
@@ -70,8 +98,10 @@ def invert(inverter, image):
   return latent_code, reconstruction, ssim_loss
 
 
-def batch_invert(inverter,source_dir,threshold = 0.3):
-  """Inverts a directory of images which has not been preprocessed."""
+def batch_invert(inverter,source_dir,threshold = 0.3,need_align = False):
+  """Inverts a directory of images which has not been preprocessed.
+     cropping and alignment done inside this function.
+  """
 
   latent_codes = []
   image_names = []
@@ -80,14 +110,19 @@ def batch_invert(inverter,source_dir,threshold = 0.3):
 
   for image_name in natsorted(os.listdir(source_dir)):
     if image_name.split('.')[-1].lower() is 'jpg' or 'png' or 'jpeg' :
-      mani_image = align(inverter, os.path.join(source_dir,image_name))
-      if mani_image is not None:
-        if mani_image.shape[2] == 4:
-          mani_image = mani_image[:, :, :3]
-        latent_code, _ , ssim_loss= invert(inverter, mani_image)
-        if ssim_loss>threshold:
-          image_names.append(image_name)
-          latent_codes.append(latent_code)
+      
+      if not need_align:
+        mani_image, mani_image_name = align(inverter, os.path.join(source_dir,image_name))
+        if mani_image is not None:
+          if mani_image.shape[2] == 4:
+            mani_image = mani_image[:, :, :3]
+      else:
+         mani_image = plt.imread(os.path.join(source_dir,image_name))
+
+      latent_code, _ , ssim_loss= invert(inverter, mani_image)
+      if ssim_loss>threshold:
+        image_names.append(image_name)
+        latent_codes.append(latent_code)
   return latent_codes,image_names
 
 
@@ -113,23 +148,39 @@ def load_image(path):
   image = Image.open(path)
   return image
 
+def flatten(t):
+    return [item for sublist in t for item in sublist]
 
-def load_images_from_dir(dspth,align_size = 256, need_align = False):
+    
+def load_images_from_dir(dspth,align_size = 256, need_align = False , use_hog = False):
 
   images = []
   image_names =  natsorted(os.listdir(dspth))
+  aligned_images_names = []
 
 
   for image_name in natsorted(os.listdir(dspth)):
     if image_name.split('.')[-1].lower() is 'jpg' or 'png' or 'jpeg' :
-      aligned_image = plt.imread(os.path.join(dspth,image_name))
       if need_align:
-        aligned_image = align_face((os.path.join(dspth,image_name)),align_size=align_size)
-      else:
-        aligned_image = cv2.resize(aligned_image , (align_size,align_size))
-      images.append(aligned_image)
+        aligned_image , aligned_name  = align_face((os.path.join(dspth,image_name)),align_size=align_size , use_hog = use_hog )
 
-  return images,image_names
+      else:
+        aligned_image = plt.imread(os.path.join(dspth,image_name))
+        aligned_image = cv2.resize(aligned_image , (align_size,align_size))
+        aligned_name = image_name
+
+
+      images.append(aligned_image)
+      if type(aligned_image) == list :
+        images = flatten(images)
+
+      aligned_images_names.append(aligned_name)
+      if type(aligned_image) == list:
+        aligned_images_names = flatten(aligned_images_names)
+
+      
+
+  return images,aligned_images_names
 
 
 def imshow(images, col, viz_size=256):

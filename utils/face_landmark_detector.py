@@ -11,7 +11,7 @@ import scipy.ndimage
 class FaceLandmarkDetector(object):
   """Class of face landmark detector."""
 
-  def __init__(self, align_size=256, enable_padding=True, model_name = 'styleganinv_ffhq256' ,model_dir = 'pretrained_models' ,landmark_model_name = 'shape_predictor_68_face_landmarks.dat'):
+  def __init__(self, align_size=256, use_hog = False, enable_padding=True, model_name = 'styleganinv_ffhq256' ,model_dir = 'pretrained_models' ,landmark_model_name = 'shape_predictor_68_face_landmarks.dat', mmod_model_name='mmod_human_face_detector.dat'):
     """Initializes face detector and landmark detector.
 
   Args:
@@ -21,12 +21,19 @@ class FaceLandmarkDetector(object):
     True)
   """
     # Download models if needed.
+    self.use_hog  = use_hog
 
     self.model_name = model_name
     self.model_dir = os.path.join(model_dir)
     os.makedirs(self.model_dir, exist_ok=True)
 
+
+
+
+
+
     self.landmark_model_path = os.path.join(self.model_dir, landmark_model_name)
+
     self.landmark_model_url = f'http://dlib.net/files/{landmark_model_name}.bz2'
 
     if not os.path.exists(self.landmark_model_path):
@@ -35,7 +42,13 @@ class FaceLandmarkDetector(object):
       with open(self.landmark_model_path, 'wb') as f:
         f.write(data_decompressed)
 
-    self.face_detector = dlib.get_frontal_face_detector()
+    if use_hog:
+      self.face_detector = dlib.get_frontal_face_detector()
+    else:
+      self.mmod_face_detector_model_path = os.path.join(self.model_dir, mmod_model_name)
+      self.face_detector = dlib.cnn_face_detection_model_v1(self.mmod_face_detector_model_path)
+
+
     self.landmark_detector = dlib.shape_predictor(self.landmark_model_path)
     self.align_size = align_size
     self.enable_padding = enable_padding
@@ -65,9 +78,11 @@ class FaceLandmarkDetector(object):
     images = dlib.load_rgb_image(image_path)
 
     # Face detection (1 means to upsample the image for 1 time.)
-    bboxes = self.face_detector(images, 1)
+    bboxes = self.face_detector(images, 2)
     # Landmark detection
     for bbox in bboxes:
+      if not self.use_hog:
+        bbox = bbox.rect
       landmarks = []
       for point in self.landmark_detector(images, bbox).parts():
         landmarks.append((point.x, point.y))

@@ -25,11 +25,11 @@ def parse_args():
   parser.add_argument('--test_dir', type=str, default = './test_data',
                       help='directory of images to invert.')
 
-#   parser.add_argument('--need_align', type=bool, default = True,
-#                       help='need alignment and crop of input images.')
-
   parser.add_argument('--need_align', dest='need_align', action='store_true',
                       help='need alignment and crop of input images.')
+
+  parser.add_argument('--use_hog', dest='use_hog', action='store_true',
+                      help='Use HOG + SVM in face detection instead of MMOD CNN.')
 
   parser.add_argument('-o', '--output_dir', type=str, default='./results',
                       help='Directory to save the results. If not specified, '
@@ -100,7 +100,7 @@ def main():
     logger,logfile_name = setup_logger(output_dir, 'hairGAN.log', 'logger')
     logger.info(f"logging into {logfile_name}")
 
-    images,aligned_image_names = util.load_images_from_dir(args.test_dir,need_align = args.need_align)
+    images,aligned_image_names = util.load_images_from_dir(args.test_dir,need_align = args.need_align , use_hog = args.use_hog)
     logger.info(f"found {len(images)} images in the folder")
 
     if args.need_align:
@@ -128,7 +128,7 @@ def main():
 
 
     logger.info("starting inversion!")
-    latent_codes,inverted_image_names   = util.batch_invert(inverter=inverter,source_dir=inpainting_save_path)
+    latent_codes,inverted_image_names   = util.batch_invert(inverter=inverter,source_dir=inpainting_save_path,need_align = args.need_align)
     latent_codes = np.squeeze(np.array(latent_codes),1)
     np.save(os.path.join(latent_codes_save_path,"latent_codes.npy"),latent_codes)
     generated_images = latent_code_to_image_generator.easy_synthesize(latent_codes, **{'latent_space_type': 'wp'})['image']
