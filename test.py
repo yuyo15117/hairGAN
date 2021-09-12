@@ -25,7 +25,10 @@ def parse_args():
   parser.add_argument('--test_dir', type=str, default = './test_data',
                       help='directory of images to invert.')
 
-  parser.add_argument('--need_align', type=bool, default = True,
+#   parser.add_argument('--need_align', type=bool, default = True,
+#                       help='need alignment and crop of input images.')
+
+  parser.add_argument('--need_align', dest='need_align', action='store_true',
                       help='need alignment and crop of input images.')
 
   parser.add_argument('-o', '--output_dir', type=str, default='./results',

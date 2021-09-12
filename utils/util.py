@@ -125,8 +125,8 @@ def load_images_from_dir(dspth,align_size = 256, need_align = False):
       aligned_image = plt.imread(os.path.join(dspth,image_name))
       if need_align:
         aligned_image = align_face((os.path.join(dspth,image_name)),align_size=align_size)
-      #else:
-        #aligned_image = cv2.resize(aligned_image , (align_size,align_size))
+      else:
+        aligned_image = cv2.resize(aligned_image , (align_size,align_size))
       images.append(aligned_image)
 
   return images,image_names
