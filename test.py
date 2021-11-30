@@ -100,9 +100,6 @@ def main():
     logger,logfile_name = setup_logger(output_dir, 'hairGAN.log', 'logger')
     logger.info(f"logging into {logfile_name}")
 
-################################## IMAGE LOADING #######################################################
-
-
     images,aligned_image_names = util.load_images_from_dir(args.test_dir,need_align = args.need_align , use_hog = args.use_hog)
     logger.info(f"found {len(images)} images in the folder")
 
@@ -119,22 +116,15 @@ def main():
     logger.info('Loading generator model.')
     latent_code_to_image_generator = util.get_generator(model_name = model_name)
 
-################################## INPAINTING #######################################################
-
-
-    logger.info('Loading models for inpainting.')
+    logger.info('Loading models for hypergan inpainting.')
 
     hypergan_model = hyperganModel()
     hypergan_generator = hypergan_model.build_generator()
     checkpoint = tf.train.Checkpoint(generator=hypergan_generator)
     checkpoint.restore(os.path.join(args.pretrained_dir, "ckpt-25"))
-
-
     inpainting_results = utils.inpainting.inpainting(args.test_dir,generator=hypergan_generator,savepath=inpainting_save_path) 
     logger.info(f"succesfully completed inpainting on {len(inpainting_results)} / {len(images)} images")
 
-
-################################## INVERSION #######################################################
 
 
     logger.info("starting inversion!")
