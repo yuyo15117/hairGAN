@@ -4,7 +4,7 @@ sys.path.append('../')
 import numpy as np
 import torch
 from torchvision import transforms
-
+import cv2
 from models.segmentation_models.model import BiSeNet
 
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -27,7 +27,8 @@ def segment_image(image,modelpath = './pretrained_models/79999_iter.pth', size =
     mean=[-0.485/0.229, -0.456/0.224, -0.406/0.225],
     std=[1/0.229, 1/0.224, 1/0.225]
 )
-    
+    image = cv2.resize(image, (512,512),interpolation = cv2.INTER_NEAREST)
+
     #size = 256,256
     with torch.no_grad():
       img = to_tensor(image)
@@ -44,5 +45,26 @@ def return_hair_mask(image):
   return hairmask
 
 
+def return_face_mask(image):
+  out = segment_image(image)
+  hairmask =  np.where(out==1,1,0) 
+  im_th = np.array(hairmask*255 , dtype=np.uint8)
+  im_floodfill = im_th.copy()
+
+  # Mask used to flood filling.
+  # Notice the size needs to be 2 pixels than the image.
+  h, w = im_th.shape[:2]
+  mask = np.zeros((h+2, w+2), np.uint8)
+
+  # Floodfill from point (0, 0)
+  cv2.floodFill(im_floodfill, mask, (0,0), 255);
+
+  # Invert floodfilled image
+  im_floodfill_inv = cv2.bitwise_not(im_floodfill)
+
+  # Combine the two images to get the foreground.
+  im_out = im_th | im_floodfill_inv
+
+  return im_out
 
 

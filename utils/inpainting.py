@@ -22,11 +22,13 @@ def inpainting(images_path,generator,savepath = None,size=256):
 
     gt_image = plt.imread(os.path.join(images_path,fname))
     gt_image = cv2.resize(gt_image , (size,size))/255
+    print(gt_image.shape)
     gt_image = np.array(gt_image, dtype = np.float32)
 
 
     mask = return_hair_mask(gt_image)
-    mask = np.array(mask)
+    
+    mask = cv2.resize(mask.astype('float32')  , (size,size))
     gt_image = np.expand_dims(gt_image, axis=0)
 
 

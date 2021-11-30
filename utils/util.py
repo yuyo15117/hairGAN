@@ -58,6 +58,7 @@ def align_face(image_path, align_size=256 , use_hog = False):
         aligned_images.append(aligned_image)
         aligned_images_names.append(aligned_image_name)
 
+      print(len(aligned_images) , len(aligned_images_names))
       return aligned_images,aligned_images_names
   else:
     return None, None

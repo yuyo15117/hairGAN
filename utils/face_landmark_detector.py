@@ -6,6 +6,7 @@ import dlib
 import numpy as np
 from PIL import Image
 import scipy.ndimage
+import matplotlib.pyplot as plt
 
 
 class FaceLandmarkDetector(object):
@@ -141,11 +142,14 @@ class FaceLandmarkDetector(object):
     crop = (int(np.floor(min(quad[:, 0]))), int(np.floor(min(quad[:, 1]))),
             int(np.ceil(max(quad[:, 0]))), int(np.ceil(max(quad[:, 1]))))
     crop = (max(crop[0] - border, 0),
-            max(crop[1] - border, 0),
+            max((crop[1] - border)*0.5, 0),
             min(crop[2] + border, img.size[0]),
             min(crop[3] + border, img.size[1]))
+
     if crop[2] - crop[0] < img.size[0] or crop[3] - crop[1] < img.size[1]:
+      print(crop)
       img = img.crop(crop)
+      img1 = img
       quad -= crop[0:2]
 
     # Pad.
